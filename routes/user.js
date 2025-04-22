@@ -7,6 +7,7 @@ router.get('/', async (req, res) => {
   try {
     const [users] = await db.query('SELECT * FROM Users');
     res.json(users);
+    res.send("Users fetched successfully"); 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
