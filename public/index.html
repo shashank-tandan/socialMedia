@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Social Media Analytics Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Google Fonts & Chart.js -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="icon" href="https://img.icons8.com/color/48/000000/combo-chart--v2.png">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --secondary: #06b6d4;
+      --accent: #a21caf;
+      --bg: #f3f6fa;
+      --glass: rgba(255,255,255,0.93);
+      --sidebar: #232946;
+      --radius: 22px;
+      --shadow: 0 8px 32px rgba(37,99,235,0.13);
+      --gradient: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+      --gradient-accent: linear-gradient(135deg, #a21caf 0%, #06b6d4 100%);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Montserrat', Arial, sans-serif;
+      background: linear-gradient(135deg, #f3f6fa 0%, #e0e7ff 100%);
+      color: #232946;
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: var(--sidebar);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1rem 2rem 1rem;
+      border-top-right-radius: var(--radius);
+      border-bottom-right-radius: var(--radius);
+      box-shadow: var(--shadow);
+      position: fixed;
+      height: 100vh;
+      z-index: 10;
+    }
+    .logo {
+      width: 60px;
+      height: 60px;
+      border-radius: 18px;
+      background: var(--gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 24px rgba(6,182,212,0.15);
+      border: 3px solid #fff;
+    }
+    .logo img {
+      width: 38px;
+      height: 38px;
+    }
+    .sidebar h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin: 0 0 2.2rem 0;
+      letter-spacing: 1px;
+      text-align: center;
+      color: #fff;
+    }
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.08rem;
+      font-weight: 500;
+      margin-bottom: 1.1rem;
+      cursor: pointer;
+      border-radius: 10px;
+      padding: 0.7rem 1.2rem;
+      transition: background 0.18s, transform 0.12s;
+      width: 100%;
+      justify-content: flex-start;
+    }
+    .nav-btn.active, .nav-btn:hover {
+      background: var(--gradient);
+      transform: scale(1.05);
+      color: #fff;
+    }
+    .nav-btn img {
+      width: 24px;
+      height: 24px;
+    }
+    .sidebar .social-row {
+      margin-top: auto;
+      display: flex;
+      gap: 0.7rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .sidebar .social-row img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(37,99,235,0.09);
+      transition: transform 0.13s, box-shadow 0.13s;
+      cursor: pointer;
+    }
+    .sidebar .social-row img:hover {
+      transform: scale(1.13) rotate(-7deg);
+      box-shadow: 0 4px 16px rgba(6,182,212,0.17);
+    }
+    .sidebar small {
+      opacity: 0.7;
+      font-size: 0.9rem;
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 250px;
+      padding: 2.5rem 2.5rem 2rem 2.5rem;
+      width: 100%;
+      min-height: 100vh;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* Analytics Grid */
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.3rem;
+      margin: 2rem 0 1rem 0;
+    }
+    .data-card {
+      background: var(--glass);
+      border-radius: 16px;
+      padding: 1.3rem 1.1rem;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 2px solid rgba(37,99,235,0.07);
+      position: relative;
+      overflow: hidden;
+      min-height: 110px;
+    }
+    .data-card h3 {
+      color: var(--primary);
+      margin: 0 0 0.7rem 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .data-card .value {
+      font-size: 2.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 1px;
+    }
+    .data-card .icon {
+      position: absolute;
+      bottom: 8px;
+      right: 10px;
+      width: 40px;
+      opacity: 0.13;
+    }
+
+    /* Engagement Chart */
+    #chartContainer {
+      margin: 2rem 0;
+      background: var(--glass);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      border: 2px solid rgba(37,99,235,0.07);
+    }
+
+    /* Users/Posts Cards */
+    .card-list {
+      display: grid;
+      gap: 1.2rem;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+    .user-card, .post-card {
+      background: var(--glass);
+      border-radius: 18px;
+      padding: 1.3rem 1.1rem 1.1rem 1.1rem;
+      box-shadow: var(--shadow);
+      border: 2px solid rgba(37,99,235,0.07);
+      transition: transform 0.13s, box-shadow 0.13s;
+      position: relative;
+      overflow: hidden;
+    }
+    .user-card:hover, .post-card:hover {
+      transform: translateY(-4px) scale(1.03);
+      box-shadow: 0 8px 32px rgba(37,99,235,0.19);
+    }
+    .user-card h3, .post-card h3 {
+      margin: 0 0 0.3rem 0;
+      color: var(--primary);
+      font-size: 1.1rem;
+    }
+    .user-card small, .post-card small {
+      color: #888;
+    }
+    .post-card .icon {
+      position: absolute;
+      bottom: 8px;
+      right: 10px;
+      width: 38px;
+      opacity: 0.13;
+    }
+
+    /* Fancy Create Post Card */
+    .create-card {
+      background: var(--glass);
+      border-radius: 22px;
+      box-shadow: 0 8px 32px rgba(6,182,212,0.13);
+      border: 2.5px solid rgba(37,99,235,0.11);
+      max-width: 480px;
+      margin: 2.5rem auto;
+      padding: 2.2rem 2rem 2rem 2rem;
+      position: relative;
+      overflow: hidden;
+      animation: popIn 0.6s cubic-bezier(.68,-0.55,.27,1.55);
+      transition: box-shadow 0.2s;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.8) translateY(40px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .create-card .create-icon {
+      width: 54px;
+      height: 54px;
+      background: var(--gradient-accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: -27px;
+      left: calc(50% - 27px);
+      box-shadow: 0 6px 24px rgba(162,28,175,0.14);
+      border: 3px solid #fff;
+      z-index: 2;
+    }
+    .create-card .create-icon img {
+      width: 32px;
+      height: 32px;
+    }
+    .create-card h2 {
+      text-align: center;
+      margin: 2.5rem 0 1.2rem 0;
+      color: var(--primary);
+      font-size: 1.3rem;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+    }
+    .create-card form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+      margin-top: 0.5rem;
+    }
+    .create-card input, .create-card textarea {
+      font-family: inherit;
+      padding: 0.7rem;
+      border-radius: 9px;
+      border: 1.5px solid #b3c6ff;
+      font-size: 1rem;
+      background: #f8fafc;
+      transition: border 0.15s;
+    }
+    .create-card input:focus, .create-card textarea:focus {
+      border: 1.5px solid var(--primary);
+      background: #e0e7ff;
+    }
+    .create-card button {
+      background: var(--gradient);
+      color: #fff;
+      border: none;
+      font-size: 1.08rem;
+      font-weight: 700;
+      border-radius: 8px;
+      padding: 0.8rem 0;
+      margin-top: 0.7rem;
+      cursor: pointer;
+      box-shadow: 0 2px 12px rgba(37,99,235,0.12);
+      transition: background 0.18s, transform 0.13s;
+    }
+    .create-card button:hover {
+      background: var(--gradient-accent);
+      transform: scale(1.03);
+    }
+    .create-card .success, .create-card .error {
+      text-align: center;
+      font-weight: 600;
+      margin-top: 0.7rem;
+      font-size: 1.08rem;
+    }
+    .create-card .success { color: #059669; }
+    .create-card .error { color: #e11d48; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .main-content { margin-left: 0; padding: 1rem 0.2rem; }
+      .sidebar { position: static; min-width: 100vw; flex-direction: row; height: auto; border-radius: 0; padding: 1rem 0.5rem; }
+      .sidebar h2 { display: none; }
+      .nav-btn { margin-bottom: 0; font-size: 1rem; padding: 0.5rem 0.8rem;}
+      .sidebar .social-row { margin-bottom: 0; }
+    }
+    @media (max-width: 600px) {
+      .main-content { padding: 0.2rem 0.1rem; }
+      .card-list { grid-template-columns: 1fr; }
+      .analytics-grid { grid-template-columns: 1fr; }
+      .create-card { padding: 1.2rem 0.5rem 1rem 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">
+      <img src="https://img.icons8.com/color/48/000000/combo-chart--v2.png" alt="Analytics Pro">
+    </div>
+    <h2>Analytics Pro+</h2>
+    <button class="nav-btn active" onclick="showSection('dashboard', this)">
+      <img src="https://img.icons8.com/color/32/combo-chart--v2.png" alt="Dashboard" />
+      Dashboard
+    </button>
+    <button class="nav-btn" onclick="showSection('users', this)">
+      <img src="https://img.icons8.com/color/32/user-group-man-man--v1.png" alt="Users" />
+      Users
+    </button>
+    <button class="nav-btn" onclick="showSection('posts', this)">
+      <img src="https://img.icons8.com/color/32/news.png" alt="Posts" />
+      Posts
+    </button>
+    <button class="nav-btn" onclick="showSection('create', this)">
+      <img src="https://img.icons8.com/color/32/add--v1.png" alt="Create" />
+      Create Post
+    </button>
+    <div class="social-row">
+      <img src="https://img.icons8.com/color/48/facebook-new.png" alt="Facebook" title="Facebook" />
+      <img src="https://img.icons8.com/color/48/instagram-new.png" alt="Instagram" title="Instagram" />
+      <img src="https://img.icons8.com/color/48/twitterx--v2.png" alt="Twitter" title="Twitter" />
+      <img src="https://img.icons8.com/color/48/linkedin.png" alt="LinkedIn" title="LinkedIn" />
+      <img src="https://img.icons8.com/color/48/youtube-play.png" alt="YouTube" title="YouTube" />
+    </div>
+    <small>Powered by Your Brand</small>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Dashboard Section -->
+    <div id="dashboard">
+      <h1 style="margin-bottom:0.5rem;">Social Media Analytics Dashboard</h1>
+      <div class="analytics-grid">
+        <div class="data-card">
+          <h3>Total Users</h3>
+          <div class="value" id="totalUsers">0</div>
+          <img class="icon" src="https://img.icons8.com/color/48/user-group-man-man--v1.png" alt="">
+        </div>
+        <div class="data-card">
+          <h3>Total Posts</h3>
+          <div class="value" id="totalPosts">0</div>
+          <img class="icon" src="https://img.icons8.com/color/48/news.png" alt="">
+        </div>
+        <div class="data-card">
+          <h3>Engagement Rate</h3>
+          <div class="value" id="engagementRate">0%</div>
+          <img class="icon" src="https://img.icons8.com/color/48/combo-chart--v2.png" alt="">
+        </div>
+      </div>
+      <div id="chartContainer">
+        <canvas id="engagementChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Users Section -->
+    <div id="users" style="display: none;">
+      <h2>User Analytics</h2>
+      <div class="card-list" id="usersList"></div>
+    </div>
+
+    <!-- Posts Section -->
+    <div id="posts" style="display: none;">
+      <h2>Post Analytics</h2>
+      <div class="card-list" id="postsList"></div>
+    </div>
+
+    <!-- Create Post Section -->
+    <div id="create" style="display: none;">
+      <div class="create-card">
+        <div class="create-icon">
+          <img src="https://img.icons8.com/color/48/add--v1.png" alt="Create">
+        </div>
+        <h2>Create a New Post</h2>
+        <form id="postForm">
+          <input type="text" name="title" placeholder="Post Title" required>
+          <textarea name="content" placeholder="Post Content" rows="4" required></textarea>
+          <input type="text" name="author" placeholder="Author ID" required>
+          <button type="submit">Publish Post 🚀</button>
+        </form>
+        <div id="formMessage"></div>
+      </div>
+    </div>
+  </div>
+<script src="index.js"></script>
+</body>
+</html>
